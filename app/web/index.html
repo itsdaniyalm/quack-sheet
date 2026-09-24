@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>QuackSheet</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="stylesheet" href="vendor/tabulator/tabulator.min.css">
+  <link rel="stylesheet" data-name="vs/editor/editor.main" href="vendor/monaco/vs/editor/editor.main.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header id="toolbar">
+    <div class="brand">
+      <img src="logo.png" alt="">
+      QuackSheet
+    </div>
+    <button class="btn" id="btn-open" title="Load CSV / Excel / Parquet / JSON files (Ctrl+O)">Open files…</button>
+    <div class="sep"></div>
+    <button class="btn primary" id="btn-run" title="Run selection, or the whole editor (Ctrl+Enter / F5)">▶ Run <span class="kbd">Ctrl+Enter</span></button>
+    <button class="btn" id="btn-run-stmt" title="Run the statement under the cursor (Ctrl+Shift+Enter)">Run statement</button>
+    <button class="btn danger" id="btn-stop" disabled title="Cancel the running query">■ Stop</button>
+    <div class="sep"></div>
+    <div class="menu" id="menu-export">
+      <button class="btn" data-menu>Export ▾</button>
+      <div class="menu-list">
+        <button data-action="export-csv">Results → CSV <span class="kbd"></span></button>
+        <button data-action="export-xlsx">Results → Excel (.xlsx)</button>
+        <button data-action="export-parquet">Results → Parquet</button>
+        <hr>
+        <button data-action="export-all">All tabs → one Excel workbook…</button>
+      </div>
+    </div>
+    <button class="btn" id="btn-save-query" title="Save this query to the Saved list (Ctrl+S)">☆ Save query</button>
+    <div class="spacer"></div>
+    <div class="menu right" id="menu-file">
+      <button class="btn" data-menu>Project ▾</button>
+      <div class="menu-list">
+        <button data-action="project-open">Open project…</button>
+        <button data-action="project-save">Save project <span class="kbd">Ctrl+Shift+S</span></button>
+        <button data-action="project-save-as">Save project as…</button>
+        <hr>
+        <button data-action="sql-open">Open .sql file in new tab…</button>
+        <button data-action="sql-save">Save tab as .sql file…</button>
+        <hr>
+        <button data-action="format-sql">Format SQL <span class="kbd">Shift+Alt+F</span></button>
+        <button data-action="clear-history">Clear query history</button>
+        <button data-action="clear-session">Remove all tables</button>
+        <hr>
+        <button data-action="shortcuts">Keyboard shortcuts</button>
+      </div>
+    </div>
+    <button class="btn icon" id="btn-theme" title="Toggle light / dark theme">◐</button>
+  </header>
+
+  <main>
+    <aside id="sidebar">
+      <div class="seg" id="side-seg">
+        <button data-panel="tables" class="active">Tables</button>
+        <button data-panel="saved">Saved</button>
+        <button data-panel="history">History</button>
+      </div>
+      <input id="side-filter" type="text" placeholder="Filter…" spellcheck="false">
+      <div id="panel-tables" class="panel"></div>
+      <div id="panel-saved" class="panel hidden"></div>
+      <div id="panel-history" class="panel hidden"></div>
+    </aside>
+    <div id="side-resizer" class="resizer-v"></div>
+
+    <section id="work">
+      <div id="tabs"><div id="tab-list"></div><button id="tab-add" title="New query tab (Ctrl+T)">+</button></div>
+      <div id="editor"></div>
+      <div id="work-resizer" class="resizer-h"></div>
+      <div id="results">
+        <div id="result-bar">
+          <span id="result-status"></span>
+          <span class="spacer"></span>
+          <button class="btn small hidden" id="btn-clear-filters">Clear sort &amp; filters</button>
+          <button class="btn small hidden" id="btn-quick-csv">⭳ CSV</button>
+          <button class="btn small hidden" id="btn-quick-xlsx">⭳ Excel</button>
+        </div>
+        <div id="result-error" hidden></div>
+        <div id="result-message" hidden></div>
+        <div id="grid-wrap">
+          <div id="grid"></div>
+          <div id="empty-state"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="statusbar">
+    <span id="status-left">Starting…</span>
+    <span class="spacer"></span>
+    <span id="status-right"></span>
+  </footer>
+</div>
+
+<div id="drop-overlay" hidden><span>Drop files to load them as tables</span></div>
+<div id="busy" hidden><div class="spinner"></div><span id="busy-text"></span></div>
+<div id="toasts"></div>
+<div id="modal-root"></div>
+
+<script src="vendor/tabulator/tabulator.min.js"></script>
+<script src="vendor/sql-formatter/sql-formatter.min.js"></script>
+<script src="vendor/monaco/vs/loader.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

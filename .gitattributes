@@ -1,0 +1,6 @@
+* text=auto
+
+# Third-party minified bundles: store byte-for-byte
+app/web/vendor/** -text linguist-vendored
+*.png binary
+*.ico binary

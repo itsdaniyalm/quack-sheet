@@ -1,0 +1,5 @@
+duckdb==1.5.5
+pywebview==6.2.1
+python-calamine==0.8.2
+xlsxwriter==3.2.9
+pyinstaller==6.22.3
