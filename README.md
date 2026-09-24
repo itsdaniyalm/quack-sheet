@@ -197,8 +197,8 @@ In <code>%APPDATA%\QuackSheet\state.json</code>. Loaded tables aren't kept betwe
 Requirements: Windows 10/11, Python 3.12+ (developed on 3.14) and the [WebView2 runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (preinstalled on Windows 11).
 
 ```powershell
-git clone <this repo>
-cd <repo folder>
+git clone https://github.com/itsdaniyalm/quack-sheet.git
+cd quack-sheet
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
