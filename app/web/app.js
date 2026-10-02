@@ -718,6 +718,7 @@ async function exportResult(fmt) {
   if (!tab || !tab.result) return toast('Run a query first — there are no results to export', 'warn');
   const [rid, sort, filters] = exportArgs(tab);
   const res = await api().export_result(rid, fmt, `${safeFileName(tab.title)}.${fmt}`, sort, filters);
+  hideBusy();
   exportDone(res, sort.length || filters.length);
 }
 
@@ -763,6 +764,7 @@ async function exportAllTabs() {
   });
   if (!items) return;
   const res = await api().export_workbook(items, 'results.xlsx');
+  hideBusy();
   exportDone(res, false);
 }
 
@@ -1301,7 +1303,7 @@ function bindUi() {
 }
 
 window.App = {
-  onProgress(message) { if (message) showBusy(message); },
+  onProgress(message) { if (message) showBusy(message); else hideBusy(); },
   onFilesDropped(paths) { $('#drop-overlay').hidden = true; importFiles(paths); },
 };
 
