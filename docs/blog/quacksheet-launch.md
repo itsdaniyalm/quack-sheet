@@ -138,7 +138,7 @@ You don't need to be a developer. If you can write `SELECT * FROM my_file`, you 
 
 Under the hood it's [DuckDB](https://duckdb.org), a fast analytics database that runs inside the app instead of on a server. That's where the speed comes from. Around it there's a small Python app with a web-style interface, using the Monaco editor from VS Code and a grid that pages through results instead of loading millions of rows at once.
 
-I also want to be honest about how it got built: I built it in a day, with Claude Code as my pair programmer. I came in with the problem and the opinions (what it should feel like, what my files look like, which SQL features I couldn't live without), and we went from "let's brainstorm" to a packaged app the same evening. It still feels a little ridiculous to type.
+The first version came together in a day. I knew exactly what I wanted: what it should feel like, what my files look like, and which SQL features I couldn't live without. That made it a lot easier to build than to describe.
 
 ## Try it
 

@@ -112,7 +112,7 @@
 <p>You don't need to be a developer. If you can write <code>SELECT * FROM my_file</code>, you can use it, and everything else can be picked up one query at a time.</p>
 <h3>How it's built (for the curious)</h3>
 <p>Under the hood it's <a href="https://duckdb.org">DuckDB</a>, a fast analytics database that runs inside the app instead of on a server. That's where the speed comes from. Around it there's a small Python app with a web-style interface, using the Monaco editor from VS Code and a grid that pages through results instead of loading millions of rows at once.</p>
-<p>I also want to be honest about how it got built: I built it in a day, with Claude Code as my pair programmer. I came in with the problem and the opinions (what it should feel like, what my files look like, which SQL features I couldn't live without), and we went from "let's brainstorm" to a packaged app the same evening. It still feels a little ridiculous to type.</p>
+<p>The first version came together in a day. I knew exactly what I wanted: what it should feel like, what my files look like, and which SQL features I couldn't live without. That made it a lot easier to build than to describe.</p>
 <h3>Try it</h3>
 <p>It's free and open source.</p>
 <ol>
