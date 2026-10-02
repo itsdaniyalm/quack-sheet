@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>QuackSheet launch post</title>
+<style>
+  :root { --bg:#faf8f3; --text:#1f2328; --muted:#6a6f78; --accent:#2f6fdd; }
+  body { margin:0; background:var(--bg); color:var(--text); font:19px/1.65 Georgia, 'Times New Roman', serif; }
+  .bar { position:sticky; top:0; background:#1f2328; color:#fff; font:15px/1.4 'Segoe UI', sans-serif; padding:12px 16px;
+          display:flex; gap:14px; align-items:center; flex-wrap:wrap; z-index:2; }
+  .bar button { font:inherit; font-weight:600; background:#ffc83d; color:#1f2328; border:0; border-radius:6px; padding:8px 14px; cursor:pointer; }
+  .bar span { opacity:.85; }
+  article { max-width:720px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-family:'Segoe UI', sans-serif; font-size:40px; line-height:1.2; }
+  h3 { font-family:'Segoe UI', sans-serif; font-size:28px; margin-top:44px; }
+  h4 { font-family:'Segoe UI', sans-serif; font-size:21px; margin-top:32px; }
+  img { max-width:100%; height:auto; border-radius:4px; }
+  pre { background:#f0ede6; padding:14px; overflow-x:auto; font-size:15px; }
+  code { font-family:Consolas, monospace; font-size:.85em; background:#f0ede6; padding:1px 4px; }
+  pre code { background:none; padding:0; }
+  blockquote { border-left:3px solid var(--text); margin-left:0; padding-left:20px; font-style:italic; }
+  a { color:var(--accent); }
+  .ok { color:#9be29b; }
+</style></head>
+<body>
+<div class="bar"><button id="copy">Copy post for Medium</button>
+<span id="msg">Then open medium.com/new-story, click into the body and press Ctrl+V. Images load from GitHub.</span></div>
+<article id="post">
+<h1>I got tired of fighting Excel, so I built a tiny SQL app for my spreadsheets</h1>
+<p><em>Meet QuackSheet: drag in a CSV or Excel file, write SQL, export the answer. Free, offline, and it fits in a zip file.</em></p>
+<p><img alt="QuackSheet with a few notes scribbled on it" src="https://raw.githubusercontent.com/itsdaniyalm/quack-sheet/main/docs/social/quacksheet-linkedin.png" /></p>
+<hr />
+<p>Most of my working day is spent inside files that were never meant to be worked on this hard.</p>
+<p>CSV exports. Excel reports with a title row, a blank row, and <em>then</em> the headers. Medication lists, pricing files, patient-level extracts. Some are a few thousand rows. Some are a few hundred thousand, and those are the ones where Excel starts thinking about every click.</p>
+<p>And almost every question I ask these files is really a SQL question:</p>
+<ul>
+<li>Join this file to that file.</li>
+<li>Keep only the latest row for each patient.</li>
+<li>Count things by month.</li>
+<li>Show me where these two lists don't match.</li>
+</ul>
+<p>The problem is that the data isn't in a database. It's sitting in my Downloads folder.</p>
+<h3>The two bad options</h3>
+<p>For a long time I picked between two bad options.</p>
+<p><strong>Option one: fight Excel.</strong> VLOOKUP (or XLOOKUP, if I'm feeling modern). Sort by date, Remove Duplicates, and hope I sorted the right column first. Build a pivot table, then build it again next month because the export layout changed slightly. Wait for the "Not Responding" title bar to go away.</p>
+<p><strong>Option two: load it into a real database.</strong> That works, but it's a lot of ceremony to answer one question. Create a table, fight the import wizard over date formats, notice my IDs lost their leading zeros, fix that, and <em>then</em> write the query I wanted to write twenty minutes ago.</p>
+<p>There was also an option three I never took: one of those "upload your CSV and chat with it" websites. I work with healthcare data. That data does not get uploaded anywhere, full stop.</p>
+<p>What I actually wanted was much simpler:</p>
+<blockquote>
+<p>Open the file. Write the query. Save the result.</p>
+</blockquote>
+<p>That's it. No server, no setup, no upload.</p>
+<h3>So I built it</h3>
+<p>QuackSheet is a small Windows app that does exactly that. You drop in your files, every file (and every Excel sheet) becomes a table, and you write SQL against them like they've been in a database all along.</p>
+<p>The name started as me typing "duckqurey" (typos mine). It's built on DuckDB, ducks quack, and the name stuck. 🦆</p>
+<p>Here's what using it actually looks like.</p>
+<h4>1. Drop your files in</h4>
+<p>You drag files onto the window, or use <em>Open files…</em>. Before anything loads, it shows you what it's about to create:</p>
+<p><img alt="The import dialog: one CSV and two Excel sheets, each becoming a table" src="https://raw.githubusercontent.com/itsdaniyalm/quack-sheet/main/docs/screenshots/import-dark.png" /></p>
+<p>Two small things here that save me real time:</p>
+<ul>
+<li><strong>It guesses where the header row is.</strong> That Excel report with a title on row 1 and headers on row 3? It picks row 3 by itself. You can change it if it guesses wrong.</li>
+<li><strong>It keeps leading zeros.</strong> If a column has values like <code>000123</code>, it stays text. Your NDCs, ZIP codes and account numbers come out exactly the way they went in. If you don't trust any type guessing at all, there's a checkbox to load everything as text.</li>
+</ul>
+<h4>2. Write the query you actually wanted to write</h4>
+<p>This is the part I built the whole thing for.</p>
+<p><img alt="A query joining a 1-million-row CSV to an Excel price list" src="https://raw.githubusercontent.com/itsdaniyalm/quack-sheet/main/docs/screenshots/query-dark.png" /></p>
+<p>That's a 1-million-row CSV joined to a price list that lives in an Excel file, and it came back in 131 milliseconds. Not a typo.</p>
+<p>The line I care about most is this one:</p>
+<pre><code class="language-sql">QUALIFY row_number() OVER (PARTITION BY o.customer_id ORDER BY o.order_date DESC) = 1
+</code></pre>
+<p>If you don't speak SQL, here's the plain-English version: <em>"For each customer, keep only their most recent order."</em> In Excel that's a sort, a Remove Duplicates, and a quiet prayer that you sorted by the right column first. Here it's one line, and it's right every time.</p>
+<p>The editor is the same one VS Code uses, so it has the stuff you'd expect: syntax highlighting, and autocomplete that knows your table and column names. Type <code>p.</code> and it lists the columns of whatever <code>p</code> is.</p>
+<h4>3. When you mess up, it tells you where</h4>
+<p>Because I will typo a column name. Every single time.</p>
+<p><img alt="An error message pointing at the misspelled column" src="https://raw.githubusercontent.com/itsdaniyalm/quack-sheet/main/docs/screenshots/error-dark.png" /></p>
+<p>Instead of a vague "something went wrong", it underlines the exact word, says what's wrong, and even suggests the column I probably meant (<code>channel</code>, not <code>chanel</code>). It's small, but it's the difference between a two-second fix and a two-minute hunt.</p>
+<h4>4. Poke at the results without writing more SQL</h4>
+<p>Sometimes I don't want to write another query. I just want to look.</p>
+<p><img alt="Filtering a million rows down to 16,325 using the column filters" src="https://raw.githubusercontent.com/itsdaniyalm/quack-sheet/main/docs/screenshots/filter-dark.png" /></p>
+<p>Every column has a filter box. Type <code>coffee</code> to match text, <code>&gt;=5</code> for numbers, <code>null</code> to find the blanks. Here a million rows are filtered down to the 16,325 I care about. The filtering runs in the database, not just on the rows you can see, so the count is real.</p>
+<p>There's also a little profile view for any column, which is my favorite thing to check on a file I've never seen before:</p>
+<p><img alt="The column profile showing row counts, nulls and the most common values" src="https://raw.githubusercontent.com/itsdaniyalm/quack-sheet/main/docs/screenshots/profile-dark.png" /></p>
+<p>Rows, nulls, distinct values, min and max, and the most common values, all in one click. It's the "what am I even looking at" step, done in a second.</p>
+<h4>5. Get it back out</h4>
+<p>Because the result almost always ends up in Excel anyway (let's be honest, it ends up in an email).</p>
+<p><img alt="The export menu: CSV, Excel, Parquet, or all tabs into one workbook" src="https://raw.githubusercontent.com/itsdaniyalm/quack-sheet/main/docs/screenshots/export-menu-dark.png" /></p>
+<p>CSV, Excel, or Parquet. My favorite is <strong>All tabs → one Excel workbook</strong>: if you have three queries open in three tabs, you get one file with three sheets, ready to send.</p>
+<h3>The little things that make it feel like mine</h3>
+<p>A few things I added because they annoyed me in other tools:</p>
+<ul>
+<li><strong>Query tabs, saved queries and history.</strong> That query I wrote last Tuesday is still there.</li>
+<li><strong>Projects.</strong> Save your files plus your queries as one <code>.quack</code> file, and reopen the whole setup next month when the new export lands.</li>
+<li><strong>It notices when a file changes.</strong> If the CSV gets overwritten with a newer export, it offers a one-click reload.</li>
+<li><strong>Light and dark mode</strong>, because of course.</li>
+</ul>
+<p><img alt="The same app in light mode, running a PIVOT" src="https://raw.githubusercontent.com/itsdaniyalm/quack-sheet/main/docs/screenshots/pivot-light.png" /></p>
+<h3>What it's not</h3>
+<p>I'd rather you know this up front:</p>
+<ul>
+<li><strong>It's Windows only, for now.</strong></li>
+<li><strong>It's not a dashboard or BI tool.</strong> No charts. It's for answering questions, not presenting them.</li>
+<li><strong>It's not a shared database.</strong> Everything lives in memory on your machine while the app is open. Close it and the tables are gone (your files and saved queries aren't touched, and a project brings it all back in one click).</li>
+<li><strong>Exporting a huge result to Excel is slower than CSV.</strong> A million-plus rows to <code>.xlsx</code> takes about a minute, because that's just how Excel files are built. CSV is instant.</li>
+</ul>
+<h3>Could it solve your problem too?</h3>
+<p>If any of these sound familiar, probably:</p>
+<ul>
+<li>You get the same CSV or Excel export every week or month and redo the same steps on it.</li>
+<li>You need to join two files and VLOOKUP is starting to feel like a personality trait.</li>
+<li>Your files are too big for Excel to be comfortable, but too small to justify a database.</li>
+<li>You work with data that can't leave your laptop: healthcare, finance, HR, customer data.</li>
+<li>You know a bit of SQL (or want an excuse to learn).</li>
+</ul>
+<p>You don't need to be a developer. If you can write <code>SELECT * FROM my_file</code>, you can use it, and everything else can be picked up one query at a time.</p>
+<h3>How it's built (for the curious)</h3>
+<p>Under the hood it's <a href="https://duckdb.org">DuckDB</a>, a fast analytics database that runs inside the app instead of on a server. That's where the speed comes from. Around it there's a small Python app with a web-style interface, using the Monaco editor from VS Code and a grid that pages through results instead of loading millions of rows at once.</p>
+<p>I also want to be honest about how it got built: I built it in a day, with Claude Code as my pair programmer. I came in with the problem and the opinions (what it should feel like, what my files look like, which SQL features I couldn't live without), and we went from "let's brainstorm" to a packaged app the same evening. It still feels a little ridiculous to type.</p>
+<h3>Try it</h3>
+<p>It's free and open source.</p>
+<ol>
+<li>Download the zip from the <a href="https://github.com/itsdaniyalm/quack-sheet/releases/latest">GitHub releases page</a>.</li>
+<li>Unzip it anywhere and double-click <strong>QuackSheet.exe</strong>. No installer, no admin rights, no Python.</li>
+<li>Drag in a CSV or Excel file and run <code>SELECT * FROM your_file LIMIT 100</code>.</li>
+</ol>
+<p>Windows might show a blue "Windows protected your PC" box the first time, because the app isn't signed (signing certificates cost money and this is a side project). Click <strong>More info → Run anyway</strong>.</p>
+<p>If it breaks on one of your files, I genuinely want to know. Open an issue on <a href="https://github.com/itsdaniyalm/quack-sheet">GitHub</a>, or just reply here. And if it saves you even one afternoon of VLOOKUPs, tell me about that too. That's the whole reason it exists.</p>
+<p>Quack. 🦆</p>
+<hr />
+<p><em>QuackSheet is an independent project and isn't affiliated with DuckDB. It's MIT-licensed, so feel free to poke around the code.</em></p>
+</article>
+<script>
+document.getElementById('copy').onclick = () => {
+  const sel = window.getSelection(); const r = document.createRange();
+  r.selectNodeContents(document.getElementById('post')); sel.removeAllRanges(); sel.addRange(r);
+  const ok = document.execCommand('copy'); sel.removeAllRanges();
+  const m = document.getElementById('msg');
+  m.textContent = ok ? 'Copied! Paste it into a new Medium story (Ctrl+V).' : 'Copy failed. Select the article and press Ctrl+C instead.';
+  m.className = ok ? 'ok' : '';
+};
+</script>
+</body></html>
